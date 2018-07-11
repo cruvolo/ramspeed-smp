@@ -27,12 +27,12 @@ intwr:
 	movq	%rsi, %rbp
 /* allocate */
 	shlq	$10, %rdi
-	call	malloc
+	call	malloc@plt
 	movq	%rax, %r12
 /* wall time (start) */
 	leaq	0(%rsp), %rdi
 	xorq	%rsi, %rsi
-	call	gettimeofday
+	call	gettimeofday@plt
 /* execute */
 	movq	%rbx, %rcx
 	movq	%r12, %rdi
@@ -179,10 +179,10 @@ intwr:
 /* wall time (finish) */
 	leaq	16(%rsp), %rdi
 	xorq	%rsi, %rsi
-	call	gettimeofday
+	call	gettimeofday@plt
 /* free */
 	movq	%r12, %rdi
-	call	free
+	call	free@plt
 /* calculate */
 	movq	16(%rsp), %rax
 	subq	0(%rsp), %rax
@@ -211,7 +211,7 @@ intrd:
 	movq	%rsi, %rbp
 /* allocate */
 	shlq	$10, %rdi
-	call	malloc
+	call	malloc@plt
 	movq	%rax, %r12
 /* prefill */
 	movq	%rbx, %rcx
@@ -227,7 +227,7 @@ intrd:
 /* wall time (start) */
 	leaq	0(%rsp), %rdi
 	xorq	%rsi, %rsi
-	call	gettimeofday
+	call	gettimeofday@plt
 /* execute */
 	movq	%rbx, %rcx
 	movq	%r12, %rdi
@@ -373,10 +373,10 @@ intrd:
 /* wall time (finish) */
 	leaq	16(%rsp), %rdi
 	xorq	%rsi, %rsi
-	call	gettimeofday
+	call	gettimeofday@plt
 /* free */
 	movq	%r12, %rdi
-	call	free
+	call	free@plt
 /* calculate */
 	movq	16(%rsp), %rax
 	subq	0(%rsp), %rax
