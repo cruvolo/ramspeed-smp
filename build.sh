@@ -4,7 +4,12 @@
 
 OS=`uname -s`
 RELEASE=`uname -r`
-ARCH=`uname -p`
+
+if [ "$OS" = "Linux" ]; then
+    ARCH=`uname -m`
+else
+    ARCH=`uname -p`
+fi
 
 if [ "$1" = "clean" ]; then
     echo "rm -f ramsmp temp/*.o"
