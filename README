@@ -1,0 +1,268 @@
+
+RAMspeed/SMP, a cache and memory benchmarking tool
+
+(for multiprocessor machines running UNIX-like operating systems)
+
+v3.5.0
+
+August, 2009
+
+
+This command line utility measures effective bandwidth of both cache and memory
+subsystems. It has been written entirely in C for portability purposes, though
+benchmark routines are also available in several assembly languages for
+performance reasons. So far, it's known to compile and run on the following
+operating systems and hardware platforms with assembly-level optimisations:
+
+* Linux (i386, amd64, alpha)
+* FreeBSD (i386, amd64, alpha)
+* NetBSD (i386, amd64, alpha)
+* Digital UNIX (alpha)
+
+Digital UNIX is also known as Digital OSF/1 and Compaq (HP) Tru64 UNIX.
+
+RAMspeed/SMP v3.x.x is a multiprocessed application utilising System V shared
+memory for IPC (Inter-Process Communication). RAMspeed/SMP v2.x.x was a POSIX
+multithreaded application developed no longer because of compatibility and
+performance reasons.
+
+
+GENERAL INFORMATION
+
+The software consists of two major components:
+
+1) INTmark and FLOATmark, they measure the maximum possible cache and memory
+performance while reading and writing certain blocks of data (starting from 1Kb
+and further in power of 2) continuously through ALU and FPU respectively. All
+data streams are linear (sequential) to achieve the maximal performance. In
+other words, these benchmarks allow to determine real bandwidth of cache and
+memory subsystems regardless of what has been advertised by manufacturers.
+
+2) INTmem and FLOATmem, they are synthetic simulations, but tied closely with
+the real world of computing. Each consists of four subtests (Copy, Scale, Add,
+Triad) to measure different aspects of memory performance. It's important to
+realise that even if a particular hardware offers very good linear read\write
+results, it may (or may not) deliver much worse results while switching
+continuosly between read and write operations like real life software titles
+do. These benchmarks are highly sensitive to memory latencies of any kind.
+
+Copy is the simplest among them. It just transfers data from one memory
+location to another, i. e. copies it (A = B).
+
+Scale is a little more advanced. It modifies the data before writing by
+multiplying with a certain constant value, i. e. scales it (A = m*B).
+
+Add reads data from the first memory location, then reads from the second, adds
+them up and writes the result to the third place (A = B + C).
+
+Triad is a merge of Add and Scale. It reads data from the first memory
+location, scales it, then adds data from the second one and writes to the third
+place (A = m*B + C).
+
+There are also MMXmark with MMXmem and SSEmark with SSEmem serving the same
+purpose as explained above but utilising the MMX and SSE instruction sets and
+respective registers. In general, they're supposed to be better performers
+than INTmark\INTmem and FLOATmark\FLOATmem. Of course, they're available for
+i386 and amd64 only.
+
+Non-temporal versions of MMXmark\MMXmem and SSEmark\SSEmem are supported since
+v3.4.0 of this UNIX/SMP port. They minimise cache pollution on memory reads and
+eliminate it completely on writes. In addition, they operate with a built in
+aggressive data prefetching algorithm. As a result, they offer significant
+performance improvements over regular MMX and SSE benchmarks. In some cases,
+non-temporal MMXmark and SSEmark can deliver almost 100% of theoretical
+bandwidth while reading. However, these non-temporal MMX benchmarks require
+support for the Extended MMX instruction set (MMX+) which is available since
+Intel Pentium III and AMD K6-2+ processors.
+
+INTmark\INTmem transfer data in either doublewords (32 bits) or quadwords
+(64 bits) which is hardware platform dependent. FLOATmark\FLOATmem and
+MMXmark\MMXmem utilise quadwords, SSEmark and SSEmem -- octawords (128 bits).
+For data calculations, MMXmem benchmarks prefer packed words, SSEmem ones --
+packed doublewords. FLOATmark\FLOATmem require a real floating-point unit or
+mathprocessor installed, though some fast emulator might be an acceptable
+solution as well, but that's a whole different story. Other benchmarks
+utilise floating-point capabilities for result calculations only. SSEmark and
+SSEmem require SSE support by both a processor and an operating system.
+
+There is also the BatchRun mode (*mem benchmarks only) known formerly as the
+LongRun mode but renamed to avoid a possible confusion with the power saving
+technology of Transmeta. This mode designed for high precision benchmarking and
+hardware stressing. When in this mode, benchmarks are run a defined number of
+times with average results calculated and displayed.
+
+
+RUN-TIME OPTIONS
+
+USAGE: ramsmp -b ID [-g size] [-m size] [-l runs] [-p processes]
+-b  runs a specified benchmark (by an ID number):
+     1 -- INTmark [writing]          4 -- FLOATmark [writing]
+     2 -- INTmark [reading]          5 -- FLOATmark [reading]
+     3 -- INTmem                     6 -- FLOATmem
+-g  specifies a # of Gbytes per pass (default is 8)
+-m  specifies a # of Mbytes per array (default is 32)
+-l  enables the BatchRun mode (for *mem benchmarks only),
+    and specifies a # of runs (suggested is 5)
+-p  specifies a # of processes to fork (default is 2)
+-r  displays speeds in real megabytes per second (default: decimal)
+
+The following ID numbers appear if compiled with either the i386 or amd64
+assembly sources:
+
+     7 -- MMXmark [writing]         10 -- SSEmark [writing]
+     8 -- MMXmark [reading]         11 -- SSEmark [reading]
+     9 -- MMXmem                    12 -- SSEmem
+    13 -- MMXmark (nt) [writing]    16 -- SSEmark (nt) [writing]
+    14 -- MMXmark (nt) [reading]    17 -- SSEmark (nt) [reading]
+    15 -- MMXmem (nt)               18 -- SSEmem (nt)
+
+The -b option is required, others are recommended.
+
+See SOFTWARE PREFETCHING below for information on the -t switch.
+
+The -i switch has no benchmarking meaning. It activates built in CPUinfo
+library which collects and displays various information about your processor.
+This option is available on i386 only.
+
+Since the very beginning, RAMspeed has used to calculate and display speeds
+in so-called real megabytes per second which equal to 2^20 (1,048,576) bytes
+each. It was considered that memory performance has something to do with
+operating memory size which is measured in real megabytes as well as internal
+pass and array sizing. However, it seems to be common these days to advertise
+size of storage devices, bandwidth of networks and so on in so-called decimal
+megabytes which equal to 10^6 (1,000,000) bytes each. Most cache and memory
+benchmarks report their performance in decimal megabytes too. We feel sick of
+arguing, and that's why default behaviour has changed towards decimal data
+since v3.6.0 of this UNIX/SMP port. It is still possible to display output in
+real megabytes per second by using the -r switch. To avoid possible mistakes,
+real megabytes per second are still referred as Mb/s while decimal megabytes
+per second are displayed as MB/s.
+
+There are no built in logging capabilities, but you may redirect output to a
+file instead of stdout:
+
+./ramsmp [options] > yourcomp.log
+
+Default values of memory array size and pass size do well for a wide range of
+computer hardware, but you may need to decrease them if torturing something
+pretty old, and vice versa, to increase in case of some fast and furious
+equipment.
+
+Note that the *mark benchmarks require [by default] 32Mb of memory array space
+like mentioned above, but the *mem ones demand two to three times more. The
+same applies to pass size.
+
+Don't forget that every process coming up requires additional memory space. In
+other words, -m32 -p8 setting requires four times more operating memory than
+-m32 -p2 (a gigabyte at least). Number of processes spawned must be a power of
+2 and not to exceed 256.
+
+
+SOFTWARE PREFETCHING
+
+As it has been mentioned above, non-temporal versions of the MMX and SSE
+benchmarks benefit from use of software data prefetching. It needs to note that
+the MMX+ instruction set has introduced several instructions for this purpose:
+PREFETCHNTA (prefetch with minimal cache pollution), PREFETCHT0 (prefetch to
+all cache levels), and PREFETCHT1 with PREFETCHT2 which are of no use almost.
+In theory, there is no reason to use T0 prefetching for our benchmarking needs,
+but it has been observed that some memory controllers behave pretty poorly in
+Add and Triad subtests with NTA prefetching enabled. So, it has been decided to
+set up the default settings with NTA prefetching for Copy and Scale, while
+using T0 prefetching for Add and Triad. However, it has been made possible to
+override this decision with the -t switch and to use either NTA or T0 code for
+all four memory subtests:
+
+-t0 (NTA code for Copy and Scale, T0 code for Add and Triad)
+-t1 (NTA code for Copy, Scale, Add and Triad)
+-t2 (T0  code for Copy, Scale, Add and Triad)
+
+Note that this switch applies to MMXmem (nt) and SSEmem (nt) only on i386 and
+amd64. MMXmark (nt) and SSEmark (nt) ignore it and use NTA code always.
+
+
+COMPILATION
+
+The software is known to have no problems with the GNU C compiler (GCC) and the
+GNU assembler (GAS) as well as with the DEC C compiler & assembler. However,
+there should be no problems with other compilers and assemblers (of AT&T style,
+of course).
+
+A new build system has been introduced starting with v3.3.0. Now it isn't a
+Makefile but a shell script which is supposed to be more flexible. In most
+cases, it's just enough to run it and follow with the options suggested.
+Sometimes the script cannot guess your operating system and/or hardware
+platform, thus needs a hint passed through command line. For example, some
+Linux distributions don't define a hardware platform properly, so this issue
+should be worked around, say, this way:
+
+# ./build.sh Linux amd64
+
+There should be no problem of adding support for new operating systems and
+hardware platforms in the future. Your feedback is welcome.
+
+If the script fails to detect your environment, it falls back to generic
+settings which imply the C source code only.
+
+
+RESULTS AND COMPARISONS
+
+Results shown are real and may be compared with those obtained from other
+benchmarking titles indeed. There are many of them, and they measure cache and
+memory performance in different ways using different algorithms. The oldest and
+most notable among them is open source STREAM by John D. McCalpin, though there
+are several well known software suites with memory benchmarking capabilities.
+To name a few, SiSoft Sandra by Catalin-Adrian Silasi, EVEREST by Lavalys Inc.
+and ScienceMark by Alexander Goodrich, Tim Wilkens and Sean Stanek. Although
+all three are some STREAM derivatives in means of memory benchmarking.
+
+STREAM itself is a very good benchmark. It has been used as a reference for
+INTmem and FLOATmem back in the past. Although everything has been coded from a
+scratch, the idea remains the same. Nevertheless, STREAM has been written in C
+only. It utilises a low pass size, displays the highest results only, operates
+through FPU only, doesn't accept command line parametres and much less accurate
+overall.
+
+
+ISSUES
+
+Some compilers may optimise the code in such ways that the benchmarks are no
+longer what they are meant to be. For example, GCC 3.x.x optimises the
+floating-point benchmarks by substituting some of their code with the integer
+one. It seems there is no way to work around this issue but to use the assembly
+code.
+
+Sometimes on i386-compatible CPUs write performance of FLOATmark may be better
+than read. That's not a bug but an issue specific to how i387-compatible FPUs
+work, i.e. data store requires one instruction, when data load requires one
+instruction for actually loading, and one instruction to flush a register.
+
+Some CISC processors (Intel 386 to Pentium, AMD 386 to 5x86, Cyrix 486) deliver
+strange very much write performance of *mark benchmarks: it's constant all the
+way with no respect to any cache levels and their write policies. These
+processors don't seem to support write allocation or whatever else forces them
+to perform these direct memory writes.
+
+Not really an issue, but results shown may and will differ when received under
+different operating systems, sometimes significantly.
+
+
+UNIX SPECIFIC NOTES
+
+RAMspeed runs well from any system\serial console, though any virtual terminal
+should be all right as well.
+
+It's suggested strongly to reduce background activity before running. Power
+management (APM or ACPI) may produce undesirable effects too.
+
+
+FINAL NOTES
+
+The latest version can always be downloaded from
+
+  http://www.alasir.com/software/ramspeed
+
+Relax & enjoy!
+
+
+PVB

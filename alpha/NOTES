@@ -1,0 +1,43 @@
+This paper is to describe several incompatibilities I have had faced to while
+writing benchmark assembly code for the Alpha architecture. To work around
+them, I have had no choice but to split the code into two different slightly
+distributions, "gnu" and "dec". The first directory contains the code for the
+GNU assembler (GAS), and the GNU or the BSD standard C library (Linux, NetBSD,
+OpenBSD, FreeBSD). The second one is for the DEC assembler, and the DEC
+standard C library (Digital UNIX).
+
+The first issue is gettimeofday() call, which returns tv_sec and tv_usec
+values (seconds elapsed since the 1st of January 1970, and microseconds since
+the last second); the values are 32-bit in the DEC C library, but 64-bit in
+the GNU or the BSD one.
+
+The second issue is how the assemblers load immediate floating-point values.
+For example, to load the value of pi, GAS insists on the following sequence:
+
+$$pi:
+	.double	3.1415926535897932
+
+[...]
+
+	lda	$0, $$pi
+	ldt	$f0, 0($0)
+
+In contrary, the DEC assembler welcomes another way:
+
+	ldit	$f0, 3.1415926535897932
+
+This approach is documented in the Assembly Language Programmer's Guide by
+DEC, but GAS rejects it complaining about syntax errors. On the other hand, if
+you use the first example code with the DEC assembler, RAMspeed will fail and
+dump core at runtime. The reason is not known for sure, but most likely
+because the DEC assembler parses .double (the alias of .t_floating) in a
+different way than GAS is used to.
+
+Finally, GAS ignores preprocessor directives, so it doesn't seem possible to
+work these issues around within the same code base.
+
+The issues have been observed on a machine running Digital UNIX 4.0F with the
+standard toolpack.
+
+
+RMH

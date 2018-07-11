@@ -1,0 +1,74 @@
+v3.5.0
+10th of August, 2009
+- MMX and SSE memory arrays were forced to align on 4Kb page size boundary
+- some enhancements and optimisations (base source, i386 and amd64 assembly)
+
+v3.4.1
+1st of November, 2007
+- performance improvements for non-temporal MMXmem and SSEmem
+- several small bugs were eliminated
+
+v3.4.0
+1st of September, 2007
+- non-temporal MMX and SSE benchmarks were written (i386 and amd64 assembly) 
+
+v3.3.1
+19th of May, 2006
+- cosmetic changes
+
+v3.3.0
+26th of October, 2005
+- now and forth distributed under the terms of The Alasir Licence
+- new build system was introduced
+- INT*, FLOAT*, MMX* and SSE* benchmarks were written in amd64 assembly
+- i386 assembly benchmarks were tuned a little
+
+v2.3.1 and v3.2.1
+22nd of January, 2005
+- cosmetic changes
+
+v2.3.0 and v3.2.0
+12th of October, 2004
+- INT* and FLOAT* benchmarks were written in alpha assembly
+- most C and all i386 assembly sources were rewritten
+
+v2.2.0 and v3.1.0
+17th of September, 2004
+- SSEmark and SSEmem were written (i386 assembly)
+- minor changes in most benchmarking routines
+
+v2.1.0 and v3.0.0
+29th of August, 2004
+- MMXmark and MMXmem were written (i386 assembly)
+- main() was redesigned and advanced
+
+v2.0.1
+28th of May, 2004
+- a little update
+
+v2.0.0
+25th of March, 2004
+- everything was rewritten and optimised
+- benchmark routines were also coded in i386 assembly
+
+v1.12
+4th of March, 2004
+- unneeded const and volatile declarations were removed
+
+v1.11
+16th of February, 2004
+- ambiguous declarations in FLOATmark were fixed
+
+v1.10
+10th of February, 2004
+- main() was reshaped significantly
+- LongRun mode was implemented
+- general code clean-up
+
+v1.01
+16th of November, 2003
+- output was reformatted
+
+v1.00
+15th of July, 2003
+- initial public release
