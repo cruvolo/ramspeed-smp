@@ -12,6 +12,10 @@ if [ "$1" = "clean" ]; then
     exit
 fi
 
+if [ ! -e temp ]; then
+    mkdir temp
+fi
+
 if [ "$1" ]; then OS=$1; fi
 if [ "$2" ]; then ARCH=$2; fi
 
